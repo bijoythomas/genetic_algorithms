@@ -1,7 +1,7 @@
 const {always, compose, curry, head, isNil, length, min, prop, sort, splitWhen, update} = require('ramda')
 const _ = require('lodash')
 
-module.exports = (_fitness, targetLen, optimalfitness, geneset, _display, customMutate, customCreate) => {
+module.exports = (_fitness, targetLen, optimalfitness, geneset, _display, customMutate, customCreate, maxAge) => {
 
   const
 
@@ -117,7 +117,7 @@ module.exports = (_fitness, targetLen, optimalfitness, geneset, _display, custom
         : _generateParent(geneset, targetLen)
 
 
-      for (let improvement of getImprovement(mutate, generate, 50)) {
+      for (let improvement of getImprovement(mutate, generate, maxAge)) {
         _display(improvement.genes(), improvement.fitness())
         if (improvement.fitness().isequal(optimalfitness)) {
           return improvement

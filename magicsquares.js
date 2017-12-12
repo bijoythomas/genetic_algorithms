@@ -50,6 +50,6 @@ _mutate = curry((geneset, genes) => {
 
 display = _display(Date.now()),
 
-engine = genetic(_fitness(15), length(geneset), Fitness(0), geneset, display, _mutate(geneset), undefined)
+engine = genetic(_fitness(15), length(geneset), Fitness(0), geneset, display, _mutate(geneset), undefined, 50)
 
 engine.getbest()
