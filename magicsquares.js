@@ -1,5 +1,5 @@
-const {compose, curry, equals, filter, findIndex, flatten, intersection, join, length, map, range, reverse, splitEvery, sum, transpose, update, zipWith} = require('ramda')
-const genetic = require('./genetic')
+const {compose, curry, equals, filter, flatten, intersection, join, length, map, o, range, reverse, splitEvery, subtract, sum, transpose, update, zipWith} = require('ramda')
+const genetic = require('./genetic_with_annealing')
 const {log} = console
 const _ = require('lodash')
 
@@ -12,21 +12,22 @@ geneset = range(1, SIZE * SIZE + 1),
 
 Fitness = total => ({
   total,
-  isbetter: other => total > other.total,
+  isbetter: other => total < other.total,
   isequal: other => total === other.total
 }),
 
 _fitness = curry((expectedsum, geneset) => {
   let
+  partialFitness = arr => compose(
+    sum,
+    map(o(Math.abs, subtract(EXPECTED_SUM))),
+    map(sum)
+  )(arr),
   rows = splitEvery(SIZE, geneset),
   columns = transpose(rows),
-  rightdiagonal = zipWith(intersection, rows, columns),
-  leftdiagonal = zipWith(intersection, rows, reverse(columns)),
-  total = compose(length, filter(equals(expectedsum)), map(sum))(rows) +
-    compose(length, filter(equals(expectedsum)), map(sum))(columns) +
-    compose(n => n === expectedsum ? 1 : 0, sum, flatten)(rightdiagonal) +
-    compose(n => n === expectedsum ? 1 : 0, sum, flatten)(leftdiagonal)
-
+  rightdiagonal = compose(Array.of, flatten, zipWith(intersection, rows))(columns),
+  leftdiagonal = compose(Array.of, flatten, zipWith(intersection, rows))(reverse(columns)),
+  total = o(sum, map(partialFitness))([rows, columns, rightdiagonal, leftdiagonal])
   return Fitness(total)
 }),
 
@@ -37,16 +38,6 @@ _display = curry((start, genes, fitness) => {
 
 _mutate = curry((geneset, genes) => {
   let
-  // index = _.random(0, length(genes) - 1),
-  // value = genes[index],
-  // [newgene, alternate] = [_.sample(geneset), _.sample(geneset)],
-  // newvalue = value === newgene ? alternate : newgene,
-  // otherIndex = findIndex(equals(newvalue), genes)
-
-  // return compose(
-  //   update(otherIndex, value),
-  //   update(index, newvalue)
-  // )(genes)
   [indexA, indexB] = [_.random(length(genes) - 1), _.random(length(genes) - 1)],
   valueA = genes[indexA],
   valueB = genes[indexB]
@@ -59,8 +50,6 @@ _mutate = curry((geneset, genes) => {
 
 display = _display(Date.now()),
 
-engine = genetic(_fitness(15), length(geneset), Fitness(15), geneset, display, _mutate(geneset), undefined)
+engine = genetic(_fitness(15), length(geneset), Fitness(0), geneset, display, _mutate(geneset), undefined)
 
 engine.getbest()
-
-// log(_mutate(geneset, geneset))
