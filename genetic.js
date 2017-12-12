@@ -1,4 +1,4 @@
-const {compose, curry, length, min, update} = require('ramda')
+const {always, compose, curry, length, min, update} = require('ramda')
 const _ = require('lodash')
 
 module.exports = (_fitness, targetLen, optimalfitness, geneset, _display, customMutate, customCreate) => {
@@ -10,10 +10,15 @@ module.exports = (_fitness, targetLen, optimalfitness, geneset, _display, custom
    * @param {Array} genes
    * @ return {Object}
    */
-  chromosome = genes => ({genes, fitness: _fitness(genes)}),
+  chromosome = function(genes) {
+    return {
+      genes: always(genes),
+      fitness: always(_fitness(genes))
+    }
+  },
 
   _mutate = curry((geneset, parentchromosome) => {
-    let {genes} = parentchromosome
+    let genes = parentchromosome.genes()
     let index = _.random(length(genes) - 1)
     let [newgene, alternate] = [_.sample(geneset), _.sample(geneset)]
     let child = genes[index] === alternate
@@ -37,7 +42,7 @@ module.exports = (_fitness, targetLen, optimalfitness, geneset, _display, custom
       let
       // Set up the functions
       mutate = customMutate
-        ? compose(chromosome, chromosome => customMutate(chromosome.genes))
+        ? compose(chromosome, chromosome => customMutate(chromosome.genes()))
         : _mutate(geneset),
 
       // Initial guesses
@@ -45,25 +50,25 @@ module.exports = (_fitness, targetLen, optimalfitness, geneset, _display, custom
         ? chromosome(customCreate())
         : _generateParent(geneset, targetLen),
 
-      currentfitness = currentbest.fitness
+      currentfitness = currentbest.fitness()
 
       if (currentfitness.isequal(optimalfitness)) {
-        _display(currentbest.genes, currentbest.fitness)
+        _display(currentbest.genes(), currentbest.fitness())
         return currentbest
       }
       // console.log(currentbest)
       while (true) {
         let child = mutate(currentbest)
         // console.log(child)
-        if (currentfitness.isbetter(child.fitness)) {
+        if (currentfitness.isbetter(child.fitness())) {
           continue
         }
 
-        _display(child.genes, child.fitness)
-        if (child.fitness.isequal(optimalfitness)) {
+        _display(child.genes(), child.fitness())
+        if (child.fitness().isequal(optimalfitness)) {
           return child
         }
-        currentfitness = child.fitness
+        currentfitness = child.fitness()
         currentbest = child
       }
     }
