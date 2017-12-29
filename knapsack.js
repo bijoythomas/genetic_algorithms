@@ -144,5 +144,4 @@ optimalfitness = fitness([ItemQuantity(flour, 1), ItemQuantity(butter, 14), Item
 
 engine = genetic(fitness, length(items), optimalfitness, items, display, mutate, create, 50)
 
-log('optimalfitness', optimalfitness.totalvalue())
 engine.getbest()

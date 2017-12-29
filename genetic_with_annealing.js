@@ -83,10 +83,9 @@ module.exports = (_fitness, targetLen, optimalfitness, geneset, _display, custom
 
         if (rand < prob) {
           parent = child
-          continue
+        } else {
+          parent = chromosome(bestparent.genes(), bestparent.fitness(), 0)
         }
-
-        parent = chromosome(bestparent.genes(), bestparent.fitness(), 0)
         continue
       }
 
