@@ -4,6 +4,7 @@
   "description": "",
   "main": "index.js",
   "dependencies": {
+    "fetch": "^1.1.0",
     "lodash": "~4.6.1",
     "ramda": "~0.24.1",
     "ramda-fantasy": "~0.7.0"
